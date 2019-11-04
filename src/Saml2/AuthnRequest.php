@@ -173,9 +173,6 @@ AUTHNREQUEST;
      */
     public function getRequest($deflate = null)
     {
-        dump('test fork used');
-        exit();
-        
         $subject = $this->_authnRequest;
 
         if (is_null($deflate)) {
