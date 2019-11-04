@@ -17,6 +17,10 @@ namespace OneLogin\Saml2;
 
 use RobRichards\XMLSecLibs\XMLSecurityKey;
 
+// MRB EDIT START
+use Symfony\Component\HttpFoundation\Session\Session;
+// MRB EDIT END
+
 use Exception;
 
 /**
@@ -174,6 +178,17 @@ class Auth
      */
     public function __construct(array $settings = null)
     {
+        // MRB EDIT START
+        $session = new Session();
+        $mrbCoreSession = $session->get('core');
+
+        if (isset($mrbCoreSession['saml']['settings'])) {
+            $settings['idp'] = $mrbCoreSession['saml']['settings']['idp'];
+            $settings['sp'] = $mrbCoreSession['saml']['settings']['sp'];
+            $settings['baseurl'] = $mrbCoreSession['saml']['settings']['baseurl'];
+        }
+        // MRB EDIT END
+
         $this->_settings = new Settings($settings);
     }
 
@@ -274,8 +289,7 @@ class Auth
                 $this->_errors[] = 'invalid_logout_response';
                 $this->_lastErrorException = $logoutResponse->getErrorException();
                 $this->_lastError = $logoutResponse->getError();
-
-            } else if ($logoutResponse->getStatus() !== Constants::STATUS_SUCCESS) {
+            } elseif ($logoutResponse->getStatus() !== Constants::STATUS_SUCCESS) {
                 $this->_errors[] = 'logout_not_success';
             } else {
                 $this->_lastMessageId = $logoutResponse->id;
@@ -287,7 +301,7 @@ class Auth
                     }
                 }
             }
-        } else if (isset($_GET['SAMLRequest'])) {
+        } elseif (isset($_GET['SAMLRequest'])) {
             $logoutRequest = new LogoutRequest($this->_settings, $_GET['SAMLRequest']);
             $this->_lastRequest = $logoutRequest->getXML();
             if (!$logoutRequest->isValid($retrieveParametersFromServer)) {
